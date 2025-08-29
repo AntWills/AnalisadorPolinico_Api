@@ -1,4 +1,5 @@
-from contextlib import asynccontextmanager
+import logging
+from model.ModelYOLO import ModelYOLO
 from fastapi.middleware.cors import CORSMiddleware
 import datetime
 from fastapi import FastAPI, UploadFile, File
@@ -7,7 +8,8 @@ from PIL import Image
 import io
 import os
 
-from model.ModelYOLO import ModelYOLO
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 # @asynccontextmanager
@@ -39,18 +41,23 @@ yolo = ModelYOLO()
 
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
-    print("[call POST /analyze]")
+    try:
+        logger.info(
+            f"Requisição recebida em /analyze com arquivo: {file.filename}")
 
-    image_bytes = await file.read()
+        image_bytes = await file.read()
 
-    # Passa pro YOLO sem salvar
-    results = yolo.analyze(image_bytes)
-    print(f"results: {results}\n")
+        # Passa pro YOLO sem salvar
+        results = yolo.analyze(image_bytes)
+        print(f"results: {results}\n")
 
-    return JSONResponse(
-        content={"results": results},
-        headers={"Access-Control-Allow-Origin": "https://antwills.github.io"}
-    )
+        return JSONResponse(
+            content={"results": results},
+            headers={"Access-Control-Allow-Origin": "https://antwills.github.io"}
+        )
+    except Exception as e:
+        logger.error(f"Erro ao processar imagem: {str(e)}")
+        return {"error": str(e)}
 
 
 @app.post("/author")
