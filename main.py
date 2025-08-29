@@ -43,9 +43,13 @@ async def analyze(file: UploadFile = File(...)):
     image_bytes = await file.read()
 
     # Passa pro YOLO sem salvar
-    result = yolo.analyze(image_bytes)
-    print(f"results: {result}\n")
-    return {"results": result}
+    results = yolo.analyze(image_bytes)
+    print(f"results: {results}\n")
+
+    return JSONResponse(
+        content={"results": results},
+        headers={"Access-Control-Allow-Origin": "https://antwills.github.io"}
+    )
 
 
 @app.post("/test")
@@ -70,7 +74,12 @@ async def analyze_image_test(file: UploadFile = File(...)):
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "timestamp": datetime.datetime.now().isoformat()}
+    return JSONResponse(
+        content={"status": "healthy",
+                 "timestamp": datetime.datetime.now().isoformat()},
+        # garante CORS
+        headers={"Access-Control-Allow-Origin": "https://antwills.github.io"}
+    )
 
 if __name__ == "__main__":
     import uvicorn
