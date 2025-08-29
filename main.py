@@ -24,7 +24,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # ou ["http://localhost:5500"]
+    allow_origins=["https://antwills.github.io"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
