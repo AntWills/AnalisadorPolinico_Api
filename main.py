@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 import datetime
 from fastapi import FastAPI, UploadFile, File
@@ -8,8 +9,18 @@ import os
 
 from model.ModelYOLO import ModelYOLO
 
-app = FastAPI()
-yolo = None  # carrega uma vez na inicialização
+yolo: ModelYOLO = None  # variável global
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global yolo
+    print("Inicializando modelo YOLO...")
+    yolo = ModelYOLO()  # inicializa apenas uma vez
+    yield
+    print("Finalizando API...")
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,12 +38,9 @@ os.makedirs(SAVE_DIR, exist_ok=True)
 
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
-    global yolo  # necessário para modificar a variável global
-    # Lê os bytes do arquivo direto
-    image_bytes = await file.read()
+    print("[call POST /analyze]")
 
-    if not yolo:
-        yolo = ModelYOLO()
+    image_bytes = await file.read()
 
     # Passa pro YOLO sem salvar
     result = yolo.analyze(image_bytes)
