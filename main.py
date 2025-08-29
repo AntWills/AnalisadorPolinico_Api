@@ -53,6 +53,19 @@ async def analyze(file: UploadFile = File(...)):
     )
 
 
+@app.post("/author")
+async def author():
+    existYolo = False
+
+    if yolo:
+        existYolo = True
+
+    return JSONResponse({
+        "name": "Wills",
+        "yolo_exists": existYolo
+    })
+
+
 @app.post("/test")
 async def analyze_image_test(file: UploadFile = File(...)):
     # Lê a imagem como bytes
