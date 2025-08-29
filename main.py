@@ -9,18 +9,16 @@ import os
 
 from model.ModelYOLO import ModelYOLO
 
-yolo: ModelYOLO = None  # variável global
 
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     global yolo
+#     print("Inicializando modelo YOLO...")
+#     yolo = ModelYOLO()  # inicializa apenas uma vez
+#     yield
+#     print("Finalizando API...")
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    global yolo
-    print("Inicializando modelo YOLO...")
-    yolo = ModelYOLO()  # inicializa apenas uma vez
-    yield
-    print("Finalizando API...")
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
@@ -34,6 +32,9 @@ app.add_middleware(
 # Diretório para salvar uploads
 SAVE_DIR = "uploads"
 os.makedirs(SAVE_DIR, exist_ok=True)
+
+print("Inicializando modelo YOLO...")
+yolo = ModelYOLO()
 
 
 @app.post("/analyze")
@@ -84,3 +85,4 @@ async def health_check():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+print("Finalizando API...")
