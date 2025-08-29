@@ -27,6 +27,7 @@ os.makedirs(SAVE_DIR, exist_ok=True)
 
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
+    global yolo  # necessário para modificar a variável global
     # Lê os bytes do arquivo direto
     image_bytes = await file.read()
 
