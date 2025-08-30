@@ -1,5 +1,7 @@
 fastapi
 uvicorn
 python-multipart
+# ultralytics
+onnxruntime
 Pillow
-ultralytics
+numpy
