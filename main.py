@@ -39,6 +39,12 @@ print("Inicializando modelo YOLO...")
 yolo = ModelYOLO()
 
 
+@app.get("/")
+async def hello():
+    return JSONResponse("Hello"
+                        )
+
+
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
     try:
