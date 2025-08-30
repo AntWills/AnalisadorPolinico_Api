@@ -34,14 +34,14 @@ app.add_middleware(
 
 
 # Diretório para salvar uploads
-SAVE_DIR = "uploads"
-os.makedirs(SAVE_DIR, exist_ok=True)
+# SAVE_DIR = "uploads"
+# os.makedirs(SAVE_DIR, exist_ok=True)
 
 print("Inicializando modelo YOLO...")
 
-# yolo_lock = asyncio.Lock()
+yolo_lock = asyncio.Lock()
 # yolo: ModelYOLO = None
-yolo: OtimizedModel = OtimizedModel()
+yolo: OtimizedModel = None
 
 
 @app.get("/")
@@ -50,12 +50,12 @@ async def hello():
                         )
 
 
-# async def get_yolo():
-#     global yolo
-#     async with yolo_lock:
-#         if yolo is None:
-#             yolo = ModelYOLO()
-#     return yolo
+async def get_yolo():
+    global yolo
+    async with yolo_lock:
+        if yolo is None:
+            yolo = OtimizedModel()
+    return yolo
 
 
 @app.post("/analyze")
@@ -66,7 +66,7 @@ async def analyze(file: UploadFile = File(...)):
 
         image_bytes = await file.read()
 
-        # yolo = await get_yolo()
+        yolo = await get_yolo()
 
         # Passa pro YOLO sem salvar
         results = yolo.analyze(image_bytes)
