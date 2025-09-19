@@ -1,0 +1,4 @@
+![Licence](https://img.shields.io/badge/license-%20%20GNU%20GPLv3%20-green?style=plastic)
+# Descrição
+
+O Analisador Polínico é uma ferramenta desenvolvida no âmbito do Programa Institucional de Bolsas de Iniciação em Desenvolvimento Tecnológico e Inovação (PIBITI) do Instituto Federal de Educação, Ciência e Tecnologia do Maranhão (IFMA) - Campus Caxias, em parceria com FAPEMA e CNPq (Edital PRPGI Nº 14/2024, vigência 2024/2025). O projeto visa auxiliar apicultores e meliponicultores na identificação rápida e eficiente do espectro polínico presente no mel, por meio de uma rede neural convolucional (CNN) treinada para analisar imagens de amostras de mel.
