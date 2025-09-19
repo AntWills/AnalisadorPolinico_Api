@@ -1,4 +1,3 @@
-import os
 import onnxruntime as ort
 import numpy as np
 from PIL import Image
@@ -6,14 +5,16 @@ from io import BytesIO
 
 
 class OtimizedModel:
-    def __init__(self):
+    def __init__(self, path: str):
 
-        base_dir = os.getenv('LAMBDA_TASK_ROOT', '.')
-        model_path = os.path.join(base_dir, 'best.onnx')
+        # base_dir = os.getenv('LAMBDA_TASK_ROOT', '.')
+        # model_path = os.path.join(base_dir, 'best.onnx')
+
+        # print(f"Loading model from path: {model_path}")
 
         # Carrega o modelo ONNX
         self.ort_session = ort.InferenceSession(
-            model_path, providers=["CPUExecutionProvider"])
+            path, providers=["CPUExecutionProvider"])
 
         # A ordem das classes agora está CORRETA
         self.class_names = [

@@ -1,27 +1,61 @@
-import asyncio
+import os
 import logging
-# from model.ModelYOLO import ModelYOLO
-from model.OtimazedModel import OtimizedModel
+# from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 import datetime
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
 from PIL import Image
 import io
-import os
+
+from model.OtimazedModel import OtimizedModel
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+base_dir = os.getenv('LAMBDA_TASK_ROOT', '.')
+model_path = os.path.join(base_dir, 'model', 'best.onnx')
+
+logger.info(f"Model path: {model_path}")
+
+# Define the global variable for your model
+yolo = OtimizedModel(model_path)
+
+# Use asynccontextmanager to manage the application's lifespan
+
 
 # @asynccontextmanager
 # async def lifespan(app: FastAPI):
+#     """
+#     This is the lifespan event handler. It runs when the app starts up and shuts down.
+#     """
 #     global yolo
-#     print("Inicializando modelo YOLO...")
-#     yolo = ModelYOLO()  # inicializa apenas uma vez
-#     yield
-#     print("Finalizando API...")
+#     logger.info("Starting up and initializing the model...")
 
+#     # --- Startup logic ---
+#     try:
+#         # Get the absolute path to your model file
+#         base_dir = os.getenv('LAMBDA_TASK_ROOT', '.')
+#         model_path = os.path.join(base_dir, 'model', 'best.onnx')
+
+#         logger.info(f"Model path: {model_path}")
+
+#         # Load the model and store it in the global variable
+#         yolo = OtimizedModel(model_path)
+#         logger.info("Model loaded successfully!")
+#     except Exception as e:
+#         logger.error(f"Failed to load model: {str(e)}")
+#         # The app will not start if this fails
+#         raise
+
+#     yield  # The application will now handle requests
+
+#     # --- Shutdown logic ---
+#     logger.info("Shutting down the API...")
+#     # You can add cleanup code here if needed
+#     # For a simple model, no explicit cleanup is needed
+
+# Pass the lifespan context manager to the FastAPI instance
 app = FastAPI()
 
 app.add_middleware(
@@ -33,97 +67,40 @@ app.add_middleware(
 )
 
 
-# Diretório para salvar uploads
-# SAVE_DIR = "uploads"
-# os.makedirs(SAVE_DIR, exist_ok=True)
-
-print("Inicializando modelo YOLO...")
-
-yolo_lock = asyncio.Lock()
-# yolo: ModelYOLO = None
-yolo: OtimizedModel = None
-
-
 @app.get("/")
 async def hello():
-    return JSONResponse("Hello"
-                        )
-
-
-async def get_yolo():
-    global yolo
-    async with yolo_lock:
-        if yolo is None:
-            yolo = OtimizedModel()
-    return yolo
+    return JSONResponse("Hello")
 
 
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
+    if yolo is None:
+        return JSONResponse(
+            content={"error": "Model not loaded."},
+            status_code=500
+        )
+
     try:
         logger.info(
-            f"Requisição recebida em /analyze com arquivo: {file.filename}")
+            f"Request received on /analyze with file: {file.filename}")
 
         image_bytes = await file.read()
-
-        yolo = await get_yolo()
-
-        # Passa pro YOLO sem salvar
         results = yolo.analyze(image_bytes)
-        print(f"results: {results}\n")
 
         return JSONResponse(
             content={"results": results},
-            headers={"Access-Control-Allow-Origin": "https://antwills.github.io"}
+            headers={"Access-Control-Allow-Origin": "*"}
         )
     except Exception as e:
-        logger.error(f"Erro ao processar imagem: {str(e)}")
-        return {"error": str(e)}
-
-
-@app.post("/author")
-async def author():
-    existYolo = False
-
-    if yolo:
-        existYolo = True
-
-    return JSONResponse({
-        "name": "Wills",
-        "yolo_exists": existYolo
-    })
-
-
-@app.post("/test")
-async def analyze_image_test(file: UploadFile = File(...)):
-    # Lê a imagem como bytes
-    image_bytes = await file.read()
-
-    # save_path = os.path.join(SAVE_DIR, file.filename)
-    # with open(save_path, "wb") as f:
-    #     f.write(image_bytes)
-
-    # Converte para PIL Image se necessário
-    image = Image.open(io.BytesIO(image_bytes))
-
-    # Aqui você roda seu modelo de IA
-    # Exemplo fictício: resultado = model.predict(image)
-    resultado = {"classe": "abelha", "conf": 0.95}
-
-    # Retorna JSON com informações da análise, não os bytes
-    return JSONResponse(content=resultado)
+        logger.error(f"Error processing image: {str(e)}")
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 
 @app.get("/health")
 async def health_check():
+    status = "healthy" if yolo else "initializing"
     return JSONResponse(
-        content={"status": "healthy",
+        content={"status": status,
                  "timestamp": datetime.datetime.now().isoformat()},
-        # garante CORS
-        headers={"Access-Control-Allow-Origin": "https://antwills.github.io"}
+        headers={"Access-Control-Allow-Origin": "*"}
     )
-
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run(app, host="0.0.0.0", port=8000)
-print("Finalizando API...")
