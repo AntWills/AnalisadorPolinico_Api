@@ -21,41 +21,6 @@ logger.info(f"Model path: {model_path}")
 # Define the global variable for your model
 yolo = OtimizedModel(model_path)
 
-# Use asynccontextmanager to manage the application's lifespan
-
-
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-#     """
-#     This is the lifespan event handler. It runs when the app starts up and shuts down.
-#     """
-#     global yolo
-#     logger.info("Starting up and initializing the model...")
-
-#     # --- Startup logic ---
-#     try:
-#         # Get the absolute path to your model file
-#         base_dir = os.getenv('LAMBDA_TASK_ROOT', '.')
-#         model_path = os.path.join(base_dir, 'model', 'best.onnx')
-
-#         logger.info(f"Model path: {model_path}")
-
-#         # Load the model and store it in the global variable
-#         yolo = OtimizedModel(model_path)
-#         logger.info("Model loaded successfully!")
-#     except Exception as e:
-#         logger.error(f"Failed to load model: {str(e)}")
-#         # The app will not start if this fails
-#         raise
-
-#     yield  # The application will now handle requests
-
-#     # --- Shutdown logic ---
-#     logger.info("Shutting down the API...")
-#     # You can add cleanup code here if needed
-#     # For a simple model, no explicit cleanup is needed
-
-# Pass the lifespan context manager to the FastAPI instance
 app = FastAPI()
 
 app.add_middleware(
