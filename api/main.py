@@ -15,8 +15,23 @@ base_dir = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(base_dir, "model", "best.onnx")
 class_names_path = os.path.join(base_dir, "model", "class_names.json")
 
+logger.info(f"Base directory: {base_dir}")
 logger.info(f"Model path: {model_path}")
 logger.info(f"Class names path: {class_names_path}")
+
+# Lista o conteúdo do diretório para diagnóstico
+try:
+    logger.info(f"Conteúdo do diretório base: {os.listdir(base_dir)}")
+    logger.info(
+        f"Conteúdo do diretório model: {os.listdir(os.path.join(base_dir, 'model'))}")
+except Exception as e:
+    logger.error(f"Erro ao listar diretórios: {str(e)}")
+
+# Verifica se os arquivos existem
+if not os.path.exists(model_path):
+    logger.error(f"Arquivo do modelo não encontrado: {model_path}")
+if not os.path.exists(class_names_path):
+    logger.error(f"Arquivo de classes não encontrado: {class_names_path}")
 
 # Carrega o modelo globalmente
 try:
@@ -48,7 +63,7 @@ async def analyze(file: UploadFile = File(...)):
     if yolo is None:
         logger.error("Modelo não carregado.")
         return JSONResponse(
-            content={"error": "Model not loaded."},
+            content={"error": "Model not loaded. Check server logs for details."},
             status_code=500,
             headers={"Access-Control-Allow-Origin": "*"}
         )
