@@ -11,7 +11,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Define os caminhos para o modelo e o JSON
-base_dir = os.path.dirname(os.path.abspath(__file__))
+# base_dir = os.path.dirname(os.path.abspath(__file__))
+base_dir = os.getenv('LAMBDA_TASK_ROOT', '.')
 model_path = os.path.join(base_dir, "model", "best.onnx")
 class_names_path = os.path.join(base_dir, "model", "class_names.json")
 
