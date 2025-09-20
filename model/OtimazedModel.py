@@ -7,11 +7,6 @@ from io import BytesIO
 class OtimizedModel:
     def __init__(self, path: str):
 
-        # base_dir = os.getenv('LAMBDA_TASK_ROOT', '.')
-        # model_path = os.path.join(base_dir, 'best.onnx')
-
-        # print(f"Loading model from path: {model_path}")
-
         # Carrega o modelo ONNX
         self.ort_session = ort.InferenceSession(
             path, providers=["CPUExecutionProvider"])
